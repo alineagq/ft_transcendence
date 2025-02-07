@@ -1,123 +1,103 @@
-document.addEventListener("DOMContentLoaded", function () {
-    if (!getAccessToken()) {
-        fetch("/static/components/login/modal-login.html")
-            .then(response => response.text())
-            .then(html => {
-                const modalContainer = document.getElementById("modal-login");
-                modalContainer.innerHTML = html;
+document.addEventListener("DOMContentLoaded", () => {
+  // Declare todas as funções auxiliares antes de usá-las
 
-                setTimeout(() => {
-                    const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
-                    loginModal.show();
-                    setupLogin();
-                    setupRegister();
-                }, 100);
-            });
-    } else {
-        fetch("/static/components/logout/modal-logout.html")
-            .then(response => response.text())
-            .then(html => {
-                const modalContainer = document.getElementById("modal-logout");
-                modalContainer.innerHTML = html;
-                console.log("HTML do modal de logout carregado:", html);
+  const getAccessToken = () => localStorage.getItem("access_token");
 
-                setTimeout(() => {
-                    const logoutModal = new bootstrap.Modal(document.getElementById("logoutModal"));
-                    logoutModal.show();
-                    const logoutButton = document.getElementById("logoutButton");
-                    if (logoutButton) {
-                        console.log("Botão de logout encontrado");
-                        logoutButton.addEventListener("click", () => {
-                            logout();
-                        });
-                    }
-                }, 500);
-            });
+  const logout = () => {
+    localStorage.removeItem("access_token");
+    location.reload();
+  };
 
+  const loadModal = (url, containerId, callback) => {
+    fetch(url)
+      .then(response => response.text())
+      .then(html => {
+        const modalContainer = document.getElementById(containerId);
+        modalContainer.innerHTML = html;
+        setTimeout(callback, 100);
+      });
+  };
 
-    }
+  const setupLogin = () => {
+    const form = document.getElementById("loginForm");
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
 
-    function setupLogin() {
-        const form = document.getElementById("loginForm");
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
+      const response = await fetch("http://0.0.0.0:8000/auth/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
 
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem("access_token", data.access_token);
+        alert("Login bem-sucedido!");
+        bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
+        location.reload();
+      } else {
+        alert("Erro no login!");
+      }
+    });
+  };
 
-            const response = await fetch("http://0.0.0.0:8000/auth/login/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ username, password })
-            });
+  const setupRegister = () => {
+    const registerButton = document.getElementById("registerButton");
+    if (registerButton) {
+      registerButton.addEventListener("click", async () => {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem("access_token", data.access);
-                localStorage.setItem("refresh_token", data.refresh);
-                alert("Login bem-sucedido!");
-                const loginModal = bootstrap.Modal.getInstance(document.getElementById("loginModal"));
-                loginModal.hide();
-                location.reload();
-            } else {
-                alert("Erro no login!");
-            }
-        });
-    }
-
-    function setupRegister() {
-        const registerButton = document.getElementById("registerButton");
-        if (registerButton) {
-            registerButton.addEventListener("click", async () => {
-                const username = document.getElementById("username").value;
-                const password = document.getElementById("password").value;
-
-                const response = await fetch("http://0.0.0.0:8000/auth/register/", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                if (response.ok) {
-                    alert("Usuário registrado com sucesso!");
-                } else {
-                    let error_msg = await response.text();
-                    alert("Erro ao registrar usuário: " + error_msg);
-                }
-            });
-        }
-    }
-
-    async function refreshToken() {
-        const refresh_token = localStorage.getItem("refresh_token");
-        if (!refresh_token) return;
-
-        const response = await fetch("http://0.0.0.0:8000/auth/refreshtoken/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refresh: refresh_token })
+        const response = await fetch("http://0.0.0.0:8000/auth/register/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
         });
 
         if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem("access_token", data.access);
+          alert("Usuário registrado com sucesso!");
         } else {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
+          const errorMsg = await response.text();
+          alert("Erro ao registrar usuário: " + errorMsg);
         }
+      });
     }
+  };
 
-    function getAccessToken() {
-        return localStorage.getItem("access_token");
+  const setupAuth0 = () => {
+    const auth0Button = document.getElementById("auth0Button");
+    if (auth0Button) {
+      auth0Button.addEventListener("click", () => {
+        window.location.href =
+          "https://YOUR_AUTH0_DOMAIN/authorize?" +
+          "client_id=YOUR_AUTH0_CLIENT_ID" +
+          "&redirect_uri=YOUR_CALLBACK_URL" +
+          "&response_type=code" +
+          "&scope=openid%20profile%20email" +
+          "&connection=42";
+      });
     }
+  };
 
-    function logout() {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        location.reload();
-    }
+  // Agora, após declarar as funções, escolha qual modal carregar
+  if (!getAccessToken()) {
+    loadModal("/static/components/login/modal-login.html", "modal-login", () => {
+      const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
+      loginModal.show();
+      setupLogin();
+      setupRegister();
+      setupAuth0();
+    });
+  } else {
+    loadModal("/static/components/logout/modal-logout.html", "modal-logout", () => {
+      const logoutModal = new bootstrap.Modal(document.getElementById("logoutModal"));
+      logoutModal.show();
+      const logoutButton = document.getElementById("logoutButton");
+      if (logoutButton) {
+        logoutButton.addEventListener("click", logout);
+      }
+    });
+  }
 });

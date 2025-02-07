@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from auth.interfaces.views import login_view, register_view, refresh_token_view, logout_view
+from auth.interfaces.views import login_view, register_view, refresh_token_view, logout_view, auth0_callback_view
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -27,6 +27,7 @@ urlpatterns = [
     path('auth/register/', register_view, name='register'),
     path('auth/refreshtoken/', refresh_token_view, name='refresh_token'),
     path('auth/logout/', logout_view, name='logout'),
+    path("auth/auth0/callback/", auth0_callback_view, name="auth0_callback"),
     path('', TemplateView.as_view(template_name='index.html')),
 ]
 
