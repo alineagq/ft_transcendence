@@ -128,6 +128,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, '..', 'frontend'),
     os.path.join(BASE_DIR, '..', 'frontend', 'components', 'login'),
+    os.path.join(BASE_DIR, '..', 'frontend', 'static'),
 ]
 
 # Default primary key field type

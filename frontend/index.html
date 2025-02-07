@@ -4,10 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Duckong</title>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap JS Bundle -->
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Importmap for Three.js -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <!-- Custom Scripts -->
   <script defer src="/static/components/login/modal-login.js"></script>
+  <script type="module" src="/static/game.js"></script>
+
+  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
   <style>
     html, body {
       height: 100%;
@@ -18,13 +37,13 @@
       background-size: cover;
       height: 100%;
     }
+    #modal-logout .modal-content {
+      background-color: transparent !important;
+    }
   </style>
 </head>
 <body>
-  <div class="bg-image"></div>
-
   <div id="modal-login"></div>
   <div id="modal-logout"></div>
-
 </body>
 </html>
